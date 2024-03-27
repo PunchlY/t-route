@@ -1,0 +1,15 @@
+{
+  "name": "t-route",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "vite": "^5.2.6",
+    "vite-plugin-dts": "^3.7.3"
+  }
+}
