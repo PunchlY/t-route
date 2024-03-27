@@ -22,7 +22,8 @@ const server = createServer((req, res) => {
         res.end('Method Not Allowed');
         return;
     }
-    const find = route.find(req.url!);
+    const url = req.url!.split('?', 1)[0];
+    const find = route.find(url);
     if (!find) {
         res.statusCode = 404;
         res.end('not found');
