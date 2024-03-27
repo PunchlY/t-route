@@ -109,7 +109,7 @@ class Route<T> {
     constructor(public prefix = '') {
         this.root = new StaticNode(prefix);
     }
-    init(template: ArrayLike<string>, ...subs: unknown[]) {
+    init(template: ArrayLike<string>, ...subs: (string | RegExp | typeof Wildcard | (string | RegExp | typeof Wildcard)[])[]) {
         const node = this.root;
         return function (data: T) {
             for (const meta of Parse(node, template[0], undefined, 0, template, subs, new Meta().init(data))) {
@@ -120,15 +120,14 @@ class Route<T> {
             }
         };
     }
-    find(path: string) {
+    find(path: string, param: Record<string, string>) {
         const root = this.root;
         if (!path.startsWith(root.prefix))
             return;
-        const param = {};
         const paramMatch: [...args: RegExpMatchArray[], wildcard: string] | RegExpMatchArray[] = [];
         for (const { param: paramFunc, data } of Find(root, path, root.prefix.length, paramMatch)) {
             paramFunc?.apply(param, paramMatch);
-            return { param, data } as { param: Record<string, string>, data: T; };
+            return data as T;
         }
         return;
     }
