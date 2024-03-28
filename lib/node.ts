@@ -58,7 +58,7 @@ class ParametricNode extends ParentNode {
 
 class StaticNode extends ParentNode {
     declare matchPrefix?: (path: string, pathIndex: number) => boolean;
-    parametric: ParametricNode[] = [];
+    parametric = new Map<string, ParametricNode>;
     wildcard?: WildcardNode;
     constructor(
         public prefix: string,
@@ -67,20 +67,14 @@ class StaticNode extends ParentNode {
         this.compilePrefixMatch();
     }
 
-    getParametricChild(regex: RegExp) {
-        return this.parametric.find(child => {
-            return regex.source === child.regex.source;
-        });
-    }
-
     createParametricChild(source: string) {
         const regex = new RegExp(`^${source}$`);
-        let parametricChild = this.getParametricChild(regex);
+        let parametricChild = this.parametric.get(source);
         if (parametricChild)
             return parametricChild;
 
         parametricChild = new ParametricNode(regex);
-        this.parametric.push(parametricChild);
+        this.parametric.set(source, parametricChild);
 
         return parametricChild;
     }
