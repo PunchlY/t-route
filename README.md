@@ -1,11 +1,11 @@
-# t-route
+# template-route
 
 这是一个路由, 使用模板字符串和`Radix Tree`.
 
 # Usage
 
 ```js
-import { Route, Wildcard } from 't-route';
+import { Route, Wildcard } from 'template-route';
 
 const router = new Route()
 
