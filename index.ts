@@ -99,14 +99,14 @@ function* Find(node: StaticNode | ParametricNode, path: string, index: number, p
     }
 }
 
-class Route<T> {
-    private root: StaticNode;
+class Route<T extends any[]> {
+    #root: StaticNode;
     constructor(public prefix = '') {
-        this.root = new StaticNode(prefix);
+        this.#root = new StaticNode(prefix);
     }
     init(template: ArrayLike<string>, ...subs: (string | RegExp | typeof Wildcard | (string | RegExp | typeof Wildcard)[])[]) {
-        const node = this.root;
-        return function (data: T) {
+        const node = this.#root;
+        return function (...data: T) {
             for (const meta of Parse(node, template[0], undefined, 0, template, subs, new Meta(data))) {
                 if (meta._index)
                     meta.param = Function(`${[...meta._names].map(([key, value]) => `this[${JSON.stringify(key)}]=${value}`).join(',')}`) as any;
@@ -114,17 +114,17 @@ class Route<T> {
         };
     }
     has(path: string) {
-        if (!path.startsWith(this.root.prefix))
+        if (!path.startsWith(this.#root.prefix))
             return false;
-        for (const _ of Find(this.root, path, this.root.prefix.length))
+        for (const _ of Find(this.#root, path, this.#root.prefix.length))
             return true;
         return false;
     }
     find(path: string, param?: Record<string, string>) {
-        if (!path.startsWith(this.root.prefix))
+        if (!path.startsWith(this.#root.prefix))
             return;
         const paramMatch: [...args: RegExpMatchArray[], wildcard: string] | RegExpMatchArray[] = [];
-        for (const { param: paramFunc, data } of Find(this.root, path, this.root.prefix.length, paramMatch)) {
+        for (const { param: paramFunc, data } of Find(this.#root, path, this.#root.prefix.length, paramMatch)) {
             if (param)
                 paramFunc?.apply(param, paramMatch);
             return data as T;
