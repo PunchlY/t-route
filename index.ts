@@ -99,7 +99,7 @@ function* Find(node: StaticNode | ParametricNode, path: string, index: number, p
     }
 }
 
-class Route<T extends any[]> {
+class Router<T extends any[]> {
     #root: StaticNode;
     constructor(public prefix = '') {
         this.#root = new StaticNode(prefix);
@@ -133,4 +133,4 @@ class Route<T extends any[]> {
     }
 }
 
-export { Route, Wildcard };
+export { Router as default, Router, Wildcard };

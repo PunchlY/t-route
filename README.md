@@ -5,9 +5,9 @@
 # Usage
 
 ```js
-import { Route, Wildcard } from 'template-route';
+import { Router, Wildcard } from 'template-route';
 
-const router = new Route()
+const router = new Router()
 
 router.init`/`('hello world');
 
