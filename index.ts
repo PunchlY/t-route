@@ -71,14 +71,12 @@ function* Parse(node: StaticNode, path: string, param: string | undefined, index
 }
 
 function* Find(node: StaticNode | ParametricNode, path: string, index: number, param?: any[]): Generator<Meta> {
-    if (index >= path.length) {
-        if (node.meta)
-            yield node.meta;
-        return;
-    }
-    const next = node.findStaticMatchingChild(path, index);
-    if (next)
-        yield* Find(next, path, index + next.prefix.length, param);
+    if (index < path.length) {
+        const next = node.findStaticMatchingChild(path, index);
+        if (next)
+            yield* Find(next, path, index + next.prefix.length, param);
+    } else if (node.meta)
+        yield node.meta;
     if (node instanceof StaticNode) {
         let end = path.indexOf('/', index);
         end = end === -1 ? Infinity : end;
