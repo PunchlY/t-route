@@ -3,6 +3,17 @@ import { EscapeRegExp, NamedCapturingGroup } from './lib/regexp';
 
 const Wildcard = Symbol('*');
 
+class UnSafeString extends String {
+}
+function UnSafe(data: unknown[]): String[];
+function UnSafe(data: unknown): String;
+function UnSafe(data: unknown): String[] | String {
+    if (Array.isArray(data))
+        return data.map((e) => new UnSafeString(e));
+    else
+        return new UnSafeString(data);
+}
+
 class Meta {
     param?(this: Record<string, string>, ...args: [...args: RegExpMatchArray[], wildcard: string] | RegExpMatchArray[]): void;
     constructor(
@@ -36,9 +47,11 @@ function* Parse_sub(sub: unknown, node: StaticNode, param: string | undefined, i
             throw new Error('Wildcard must be the last substitution in the route');
         meta._names.set('*', `arguments[${meta._index++}]`);
         return yield node.createWildcardChild().meta = meta;
+    } else if (sub instanceof UnSafeString) {
     } else {
-        return yield* Parse(node, `${encodeURIComponent(sub as any)}${template[index]}`, param, index, template, subs, meta);
+        sub = encodeURIComponent(sub as any);
     }
+    return yield* Parse(node, `${sub}${template[index]}`, param, index, template, subs, meta);
 }
 function* Parse(node: StaticNode, path: string, param: string | undefined, index: number, template: ArrayLike<string>, subs: unknown[], meta: Meta): Generator<Meta> {
     if (param) {
@@ -60,10 +73,10 @@ function* Parse(node: StaticNode, path: string, param: string | undefined, index
         return yield node.meta = meta;
     const sub = subs[index++];
     if (Array.isArray(sub)) {
-        const clone: Meta[] = [];
-        for (const _ of sub)
-            clone.push(clone[0] ? clone[0].copy() : clone[0] = meta);
+        const clone: Meta[] = [], data = [];
         for (const e of sub)
+            data.push(e), clone.push(clone[0] ? clone[0].copy() : clone[0] = meta);
+        for (const e of data)
             yield* Parse_sub(e, node, param, index, template, subs, clone.pop()!);
         return;
     } else
@@ -102,7 +115,7 @@ class Router<T extends any[]> {
     constructor(public prefix = '') {
         this.#root = new StaticNode(prefix);
     }
-    init(template: ArrayLike<string>, ...subs: (string | RegExp | typeof Wildcard | (string | RegExp | typeof Wildcard)[])[]) {
+    init(template: ArrayLike<string>, ...subs: (string | RegExp | typeof Wildcard | String | (string | String | RegExp | typeof Wildcard)[])[]) {
         const node = this.#root;
         return function (...data: T) {
             for (const meta of Parse(node, template[0], undefined, 0, template, subs, new Meta(data))) {
@@ -131,4 +144,4 @@ class Router<T extends any[]> {
     }
 }
 
-export { Router as default, Router, Wildcard };
+export { Router as default, Router, Wildcard, UnSafe };
